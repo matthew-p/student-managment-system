@@ -1,0 +1,6 @@
+---
+- hosts: mssql
+  become: yes
+  roles:
+    - role: docker
+    - role: mssql

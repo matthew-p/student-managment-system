@@ -1,0 +1,6 @@
+---
+# primary scratch vm hostonly ip
+ubuntu16c01 ansible_host=192.168.56.10
+
+[mssql]
+ubuntu16c01

@@ -1,4 +1,4 @@
-USE School;
+USE School
 GO
 
 Create PROCEDURE dbo.SelectAllStudents

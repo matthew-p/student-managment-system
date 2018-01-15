@@ -26,11 +26,12 @@ namespace StudentManagment.Controllers
         }
 
         // GET api/v1/students/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetById")]
         public IActionResult GetById(long id)
         {
             var item = _context.Students.FirstOrDefault(
                 s => s.Id == id);
+
             if(item == null) 
             {
                 return NotFound();
@@ -40,39 +41,82 @@ namespace StudentManagment.Controllers
 
         // POST api/v1/students
         [HttpPost]
-        public async Task<IActionResult> Create(
-            [FromBody]string first, 
-            [FromBody] string last, 
-            [FromBody] decimal gpa = 0M)
+        public async Task<IActionResult> CreateStudent(
+            string firstName, 
+            string lastName, 
+            decimal gpa = -1M)
         {
-            if (string.IsNullOrWhiteSpace(first) 
-                || string.IsNullOrWhiteSpace(last))
+            if (string.IsNullOrWhiteSpace(firstName) 
+                || string.IsNullOrWhiteSpace(lastName))
             {
                 return BadRequest();
             }
             var student = new Student 
             {
-                FirstName = first, 
-                LastName = last, 
+                FirstName = firstName, 
+                LastName = lastName, 
                 Gpa = gpa
             };
             
             _context.Students.Add(student);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-
-            return CreatedAtRoute("GetById", new { id = student.Id })
+            var rows = await _context.SaveChangesAsync().ConfigureAwait(false);
+            var idObj = new { id = student.Id };
+            return CreatedAtRoute("GetById", idObj, student);
         }
 
-        // PUT api/values/5
+        // PUT api/v1/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public async Task<IActionResult> UpdateStudent(
+            [FromRoute]long id, 
+            [FromBody]string first = null, 
+            [FromBody]string last = null, 
+            [FromBody]decimal? gpa = null)
         {
+            if (string.IsNullOrWhiteSpace(first) 
+                && string.IsNullOrWhiteSpace(last)
+                && gpa == null)
+            {
+                return BadRequest();
+            }
+
+            var student = _context.Students.FirstOrDefault(
+                s => s.Id == id
+            );
+            if (student == null) 
+            {
+                return NotFound();
+            }
+
+            student.FirstName = first == null 
+                ? student.FirstName 
+                : first;
+            student.LastName = last == null 
+                ? student.LastName 
+                : last;
+            student.Gpa = gpa == null 
+                ? student.Gpa
+                : (decimal)gpa;
+
+            _context.Students.Update(student);
+            await _context.SaveChangesAsync();
+            return new NoContentResult();
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete([FromRoute]long id)
         {
+            var student = _context.Students.FirstOrDefault(
+                s => s.Id == id
+            );
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            return new NoContentResult();
         }
     }
 }

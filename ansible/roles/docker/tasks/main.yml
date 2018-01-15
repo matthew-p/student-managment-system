@@ -24,11 +24,29 @@
 
 - name: Install (or update) docker 
   apt:
-    name: docker-ce
+    name: "{{ item }}"
     state: latest
     update_cache: yes
     cache_valid_time: 86400
+  with_items:
+    - python-dev
+    - python-pip
+    - docker-ce
 
-- name: confirm docker functions
-  shell: docker run hello-world
+- name: install docker pip packages
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - docker
+    - docker-py
+    - docker-compose
+
+- name: get username
+  become: no
+  set_fact:
+    user_name: "{{ ansible_user_id }}"
+
+- name: add user to docker group
+  shell: usermod -aG docker {{ user_name }}
+
 

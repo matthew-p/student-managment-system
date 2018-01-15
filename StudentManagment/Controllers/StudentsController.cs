@@ -23,7 +23,6 @@ namespace StudentManagment.Controllers
         [HttpGet]
         public IEnumerable<Student> GetAll()
         {
-            // var all = _context.Students.ToList();
             var all1 = _context.Students
                 .FromSql("EXECUTE dbo.SelectAllStudents")
                 .ToList();
@@ -62,15 +61,6 @@ namespace StudentManagment.Controllers
                 LastName = lastName, 
                 Gpa = gpa
             };
-
-            // var firstNameParam = new SqlParameter("@FirstName", firstName);
-            // var lastNameParam = new SqlParameter("@LastName", lastName);
-            // var gpaParam = new SqlParameter("@Gpa", gpa);
-
-            // _context.Students.Add(student);
-            // _context.Students
-            //     .FromSql("EXECUTE dbo.InsertStudent @FirstName,@LastName,@Gpa",
-            //         firstNameParam, lastNameParam, gpaParam);
             
             _context.Database
                 .ExecuteSqlCommand($"EXECUTE dbo.InsertStudent {firstName},{lastName},{gpa}");
@@ -102,18 +92,6 @@ namespace StudentManagment.Controllers
                 return NotFound();
             }
 
-            // student.FirstName = firstName == null 
-            //     ? student.FirstName 
-            //     : firstName;
-            // student.LastName = lastName == null 
-            //     ? student.LastName 
-            //     : lastName;
-            // student.Gpa = gpa == null 
-            //     ? student.Gpa
-            //     : (decimal)gpa;
-
-            // _context.Students.Update(student);
-
             var idParam = new SqlParameter("Id", id);
             var firstNameParam = new SqlParameter("FirstName", firstName);
             var lastNameParam = new SqlParameter("LastName", lastName);
@@ -138,7 +116,6 @@ namespace StudentManagment.Controllers
                 return NotFound();
             }
 
-            // _context.Students.Remove(student);
             var idParam = new SqlParameter("Id", id);
             _context.Database
                 .ExecuteSqlCommand("EXECUTE dbo.DeleteStudentRecord @Id", idParam);

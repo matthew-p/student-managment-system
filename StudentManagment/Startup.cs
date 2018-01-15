@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using StudentManagment.Models;
+using StudentManagment.Repositories;
 
 namespace StudentManagment
 {
@@ -28,6 +29,7 @@ namespace StudentManagment
             services.AddDbContext<StudentManagmentContext>(
                 opt => opt.UseSqlServer(Configuration.GetConnectionString("SchoolDatabase"))
             );
+            services.AddTransient<IStudentRepository, StudentRepository>();
             services.AddMvc();
         }
 

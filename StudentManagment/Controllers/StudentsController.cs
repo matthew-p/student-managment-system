@@ -68,12 +68,12 @@ namespace StudentManagment.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudent(
             [FromRoute]long id, 
-            [FromBody]string first = null, 
-            [FromBody]string last = null, 
-            [FromBody]decimal? gpa = null)
+            string firstName = null, 
+            string lastName = null, 
+            decimal? gpa = null)
         {
-            if (string.IsNullOrWhiteSpace(first) 
-                && string.IsNullOrWhiteSpace(last)
+            if (string.IsNullOrWhiteSpace(firstName) 
+                && string.IsNullOrWhiteSpace(lastName)
                 && gpa == null)
             {
                 return BadRequest();
@@ -87,12 +87,12 @@ namespace StudentManagment.Controllers
                 return NotFound();
             }
 
-            student.FirstName = first == null 
+            student.FirstName = firstName == null 
                 ? student.FirstName 
-                : first;
-            student.LastName = last == null 
+                : firstName;
+            student.LastName = lastName == null 
                 ? student.LastName 
-                : last;
+                : lastName;
             student.Gpa = gpa == null 
                 ? student.Gpa
                 : (decimal)gpa;

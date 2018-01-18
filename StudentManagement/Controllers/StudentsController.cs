@@ -3,44 +3,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using StudentManagment.Models;
+using StudentManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data.SqlClient;
+using StudentManagement.Repositories;
 
-namespace StudentManagment.Controllers
+namespace StudentManagement.Controllers
 {
     [Route("api/v1/[controller]")]
     public class StudentsController : Controller
     {
-        private readonly StudentManagmentContext _context;
+        private readonly IStudentRepository Repo;
 
-        public StudentsController(StudentManagmentContext context)
+        public StudentsController(IStudentRepository repo) //StudentManagmentContext context)
         {
-            _context = context;
+            Repo = repo;
         }
 
         // GET api/v1/students
         [HttpGet]
-        public IEnumerable<Student> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var all1 = _context.Students
-                .FromSql("EXECUTE dbo.SelectAllStudents")
-                .ToList();
-            return all1;
+            (var students, var err) = await Repo.GetAll().ConfigureAwait(false);
+            if (err != null)
+            {
+                return StatusCode(500);
+            }
+            return Ok(students);
         }
 
         // GET api/v1/students/5
         [HttpGet("{id}", Name = "GetById")]
-        public IActionResult GetById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
-            var item = _context.Students.FirstOrDefault(
-                s => s.Id == id);
+            (var student, var err) = await Repo.GetById(id).ConfigureAwait(false);
 
-            if(item == null) 
+            if (err != null)
+            {
+                return StatusCode(500);
+            }
+            if(student == null) 
             {
                 return NotFound();
             }
-            return new ObjectResult(item);
+            return Ok(student);
         }
 
         // POST api/v1/students
@@ -62,9 +68,14 @@ namespace StudentManagment.Controllers
                 Gpa = gpa
             };
             
-            _context.Database
-                .ExecuteSqlCommand($"EXECUTE dbo.InsertStudent {firstName},{lastName},{gpa}");
-            var rows = await _context.SaveChangesAsync().ConfigureAwait(false);
+            (var rows, var err) = await Repo.CreateStudent(firstName, lastName, gpa)
+                .ConfigureAwait(false);
+
+            if (err != null)
+            {
+                return StatusCode(500);
+            }
+
             var idObj = new { id = student.Id };
             return CreatedAtRoute("GetById", idObj, student);
         }
@@ -79,28 +90,18 @@ namespace StudentManagment.Controllers
         {
             if (string.IsNullOrWhiteSpace(firstName) 
                 && string.IsNullOrWhiteSpace(lastName)
-                && gpa == null)
+                && gpa == null) 
             {
                 return BadRequest();
             }
 
-            var student = _context.Students.FirstOrDefault(
-                s => s.Id == id
-            );
-            if (student == null) 
+            (var r, var err) = await Repo.UpdateStudent(id, firstName, lastName, gpa)
+                .ConfigureAwait(false);
+            
+            if (err != null)
             {
-                return NotFound();
+                return StatusCode(500);
             }
-
-            var idParam = new SqlParameter("Id", id);
-            var firstNameParam = new SqlParameter("FirstName", firstName);
-            var lastNameParam = new SqlParameter("LastName", lastName);
-            var gpaParam = new SqlParameter("Gpa", gpa);
-
-            _context.Database
-                .ExecuteSqlCommand("EXECUTE dbo.UpdateStudent @Id,@FirstName,@LastName,@Gpa", 
-                    idParam, firstNameParam, lastNameParam, gpaParam);
-            await _context.SaveChangesAsync();
             return new NoContentResult();
         }
 
@@ -108,18 +109,14 @@ namespace StudentManagment.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute]long id)
         {
-            var student = _context.Students.FirstOrDefault(
-                s => s.Id == id
-            );
-            if (student == null)
+            var idParam = new SqlParameter("Id", id);
+            (var r, var err) = await Repo.Delete(id).ConfigureAwait(false);
+
+            if (err != null)
             {
-                return NotFound();
+                return StatusCode(500);
             }
 
-            var idParam = new SqlParameter("Id", id);
-            _context.Database
-                .ExecuteSqlCommand("EXECUTE dbo.DeleteStudentRecord @Id", idParam);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
             return new NoContentResult();
         }
     }

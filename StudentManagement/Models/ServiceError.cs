@@ -1,6 +1,6 @@
 using System;
 
-namespace StudentManagment.Models
+namespace StudentManagement.Models
 {
     public class ServiceError
     {

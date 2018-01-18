@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using StudentManagment.Models;
+using StudentManagement.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Data.SqlClient;
 
-namespace StudentManagment.Repositories
+namespace StudentManagement.Repositories
 {
     public interface IStudentRepository
     {
@@ -28,7 +28,6 @@ namespace StudentManagment.Repositories
 
         public async Task<(IEnumerable<Student>, ServiceError)> GetAll()
         {
-
             try
             {
                 var all = await _context.Students
@@ -46,7 +45,7 @@ namespace StudentManagment.Repositories
             try
             {
                 var item = await _context.Students.FirstOrDefaultAsync(
-                s => s.Id == id);
+                    s => s.Id == id);
 
                 if(item == null) 
                 {
@@ -63,18 +62,18 @@ namespace StudentManagment.Repositories
         {
             try
             {
-                // TODO fix
-                var r = _context.Database
-                .ExecuteSqlCommand($"EXECUTE dbo.InsertStudent {firstName},{lastName},{gpa}");
-                var rows = await _context.SaveChangesAsync().ConfigureAwait(false);
-                return (r, null);
+                var id = await _context.Database
+                    .ExecuteSqlCommandAsync($"EXECUTE dbo.InsertStudent {firstName},{lastName},{gpa}")
+                    .ConfigureAwait(false);
+                return (id, null);
             }
             catch (Exception ex)
             {
                 return ((long)0, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
-        public async Task<(int, ServiceError)> UpdateStudent(long id, string firstName = null, string lastName = null, decimal? gpa = null)
+        public async Task<(int, ServiceError)> UpdateStudent(long id, 
+            string firstName = null, string lastName = null, decimal? gpa = null)
         {
             try
             {
@@ -83,11 +82,11 @@ namespace StudentManagment.Repositories
                 var lastNameParam = new SqlParameter("LastName", lastName);
                 var gpaParam = new SqlParameter("Gpa", gpa);
 
-                // TODO improve
-                _context.Database
-                .ExecuteSqlCommand("EXECUTE dbo.UpdateStudent @Id,@FirstName,@LastName,@Gpa", 
-                    idParam, firstNameParam, lastNameParam, gpaParam);
-                var r = await _context.SaveChangesAsync();
+                var r = await _context.Database
+                    .ExecuteSqlCommandAsync("EXECUTE dbo.UpdateStudent @Id,@FirstName,@LastName,@Gpa", 
+                        idParam, firstNameParam, lastNameParam, gpaParam)
+                    .ConfigureAwait(false);
+
                 return (r, null);
             }
             catch (Exception ex)
@@ -100,9 +99,10 @@ namespace StudentManagment.Repositories
             try
             {
                 var idParam = new SqlParameter("Id", id);
-                _context.Database
-                    .ExecuteSqlCommand("EXECUTE dbo.DeleteStudentRecord @Id", idParam);
-                var r = await _context.SaveChangesAsync().ConfigureAwait(false);
+                var r = await _context.Database
+                    .ExecuteSqlCommandAsync("EXECUTE dbo.DeleteStudentRecord @Id", idParam)
+                    .ConfigureAwait(false);
+
                 return (r, null);
             }
             catch (Exception ex)

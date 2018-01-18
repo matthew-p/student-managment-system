@@ -11,6 +11,7 @@ AS
 SET NOCOUNT ON
     BEGIN
         INSERT INTO Students(FirstName,LastName,Gpa)
+        OUTPUT Inserted.ID
         VALUES(@FirstName,@LastName,@Gpa)
     END
 GO

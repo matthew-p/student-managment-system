@@ -20,6 +20,7 @@ namespace StudentManagement
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseUrls("http://*:5000;http://0.0.0.0:5001")
                 .Build();
     }
 }

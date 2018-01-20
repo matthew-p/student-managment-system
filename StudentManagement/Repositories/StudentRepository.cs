@@ -80,6 +80,10 @@ namespace StudentManagement.Repositories
                 if (gpa != null)
                 {
                     gpa = Math.Round((decimal)gpa, 3);
+                    if (gpa < 0 || gpa > 5M)
+                    {
+                        return (0, new ServiceError("GPA Out of Range"));
+                    }
                 }
                 var idParam = new SqlParameter("Id", id);
                 var firstNameParam = new SqlParameter("FirstName", firstName);

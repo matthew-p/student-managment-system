@@ -9,9 +9,11 @@ CREATE PROCEDURE dbo.InsertStudent
 )
 AS
 SET NOCOUNT ON
-    BEGIN
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
+    BEGIN TRANSACTION
         INSERT INTO Students(FirstName,LastName,Gpa)
         OUTPUT Inserted.ID
         VALUES(@FirstName,@LastName,@Gpa)
-    END
-GO
+    COMMIT TRANSACTION
+END

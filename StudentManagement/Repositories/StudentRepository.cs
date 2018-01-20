@@ -77,6 +77,10 @@ namespace StudentManagement.Repositories
         {
             try
             {
+                if (gpa != null)
+                {
+                    gpa = Math.Round((decimal)gpa, 3);
+                }
                 var idParam = new SqlParameter("Id", id);
                 var firstNameParam = new SqlParameter("FirstName", firstName);
                 var lastNameParam = new SqlParameter("LastName", lastName);

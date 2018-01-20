@@ -88,9 +88,8 @@ namespace StudentManagement.Controllers
             string lastName = null, 
             decimal? gpa = null)
         {
-            if (string.IsNullOrWhiteSpace(firstName) 
-                && string.IsNullOrWhiteSpace(lastName)
-                && gpa == null) 
+            if ((string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+                || (gpa == null || gpa < 0 || gpa > 5M)) 
             {
                 return BadRequest();
             }

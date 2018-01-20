@@ -9,12 +9,15 @@ Create PROCEDURE dbo.UpdateStudent
   @Gpa DECIMAL(8,6)
 )
 As
+
 SET NOCOUNT ON
-  BEGIN
+BEGIN
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  BEGIN TRANSACTION
     UPDATE Students 
        SET FirstName = IsNull(@FirstName, FirstName),
            LastName = IsNull(@LastName, LastName),
            Gpa = IsNull(@Gpa, Gpa)
      WHERE Id = @Id
-  END
-GO
+  COMMIT TRANSACTION
+END

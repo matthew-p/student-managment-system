@@ -130,9 +130,35 @@ namespace StudentManagementClient
             Controls.Add(MainGrid);
             MainGrid.Location = new Point(30, 80);
             MainGrid.Size = new Size(570, 400);
+            MainGrid.SelectionChanged += MainGrid_SelectionChanged;
         }
 
+        private async void MainGrid_SelectionChanged(object sender, EventArgs e)
+        {
+            var selected = MainGrid.SelectedCells;
+            if (selected.Count <= 0)
+            {
+                return;
+            }
+
+            var student = selected[0].OwningRow
+                .DataBoundItem as Student;
+            FirstNameText.Text = student.FirstName;
+            LastNameText.Text = student.LastName;
+            GpaText.Text = student.Gpa.ToString();
+        }
+
+        
+
         private async void GetAllStudentsButton_Click(object sender, EventArgs e)
+        {
+            //var students = await GetStudents().ConfigureAwait(false);
+            //MainGrid.Invoke((Action)(() => MainGrid.DataSource = students));
+            //MainGrid.DataSource = students;
+            await GetAll().ConfigureAwait(false);
+        }
+
+        private async Task GetAll()
         {
             var students = await GetStudents().ConfigureAwait(false);
             MainGrid.Invoke((Action)(() => MainGrid.DataSource = students));
@@ -141,9 +167,19 @@ namespace StudentManagementClient
 
         private async void CreateStudentButton_Click(object sender, EventArgs e)
         {
-            var result = await CreateStudent(
-                new Student {FirstName = "John", LastName = "Doe", Gpa = 1.0M});
-            MessageBox.Show("Created Student ID: " + result.Id);
+            var first = FirstNameText.Text;
+            var last = LastNameText.Text;
+            decimal gpa;
+            var parsed = Decimal.TryParse(GpaText.Text, out gpa);
+            if (!parsed)
+            {
+                MessageBox.Show("Could not parse GPA to decimal value");
+                return;
+            }
+            await CreateStudent(
+                new Student {FirstName = first, LastName = last, Gpa = gpa});
+            MessageBox.Show("Created Student");
+            await GetAll();
         }
 
         private async void DeleteStudentButton_Click(object sender, EventArgs e)
@@ -168,6 +204,7 @@ namespace StudentManagementClient
             }
 
             await DeleteStudent(student);
+            await GetAll();
             return;
         }
 
@@ -186,13 +223,27 @@ namespace StudentManagementClient
                 return;
             }
 
-            DialogResult result = MessageBox.Show($"Do You Want to delete {student.LastName}, {student.FirstName}?", "Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+            var first = FirstNameText.Text;
+            var last = LastNameText.Text;
+            decimal gpa;
+            var parsed = Decimal.TryParse(GpaText.Text, out gpa);
+            if (!parsed)
+            {
+                MessageBox.Show("Could not parse GPA to decimal value");
+                return;
+            }
+
+            DialogResult result = MessageBox.Show($"Do You Want to edit: {student.LastName}, {student.FirstName}?", "Edit", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (result == DialogResult.Cancel)
             {
                 return;
             }
+            student.FirstName = first;
+            student.LastName = last;
+            student.Gpa = gpa;
 
-            await DeleteStudent(student);
+            await UpdateStudent(student);
+            await GetAll();
             return;
         }
 

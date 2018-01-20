@@ -107,12 +107,17 @@ namespace StudentManagementTests
         public void DeleteStudent_Works()
         {
             AddTestStudent();
-            (var students, var err) = Repo.GetAll().ConfigureAwait(false).GetAwaiter().GetResult();
-            Assert.Null(err);
+            (var students, var err1) = Repo.GetAll().ConfigureAwait(false).GetAwaiter().GetResult();
+            Assert.Null(err1);
             Assert.NotEmpty(students);
 
-
-
+            var deleteable = students.First(s => s.LastName == "TestClass");
+            (var result, var err2) = Repo.Delete(deleteable.Id)
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+            (var deleted, var err3) = Repo.GetById(deleteable.Id)
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+            Assert.Null(deleted);
+            Assert.Null(err3);
         }
 
         public void Dispose()

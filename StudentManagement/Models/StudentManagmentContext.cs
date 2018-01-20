@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace StudentManagement.Models
 {
-    public class StudentManagmentContext : DbContext
+    public interface IStudentManagementContext
+    {
+        DbSet<Student> Students { get; set; }
+    }
+
+    public class StudentManagmentContext : DbContext, IStudentManagementContext
     {
         public StudentManagmentContext(DbContextOptions<StudentManagmentContext> options) 
             : base(options)

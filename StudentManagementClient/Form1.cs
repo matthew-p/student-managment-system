@@ -25,45 +25,111 @@ namespace StudentManagementClient
             BaseAddress = new Uri("http://192.168.56.10:5000/api/v1/")
         };
 
+        private DataGridView MainGrid;
+
         private Button GetAllStudentsButton;
         private Button CreateStudentButton;
         private Button DeleteStudentButton;
-        //private StudentBinder Binder;
-        private DataGridView MainGrid;
+        private Button EditStudentButton;
+
+        private TextBox FirstNameText;
+        private TextBox LastNameText;
+        private TextBox GpaText;
+
+        private Label FirstLabel;
+        private Label LastLabel;
+        private Label GpaLabel;
+
+        private int ButtonWidth = 50;
+        private int ButtonHeight = 20;
+        private int TextBoxWidth = 150;
+        private int TextBoxHeight = 20;
+        
 
         public Form1()
         {
-            //InitializeComponent();
-
-            this.Size = new Size(500,500);
+            Size = new Size(700,550);
 
             GetAllStudentsButton = new Button();
-            GetAllStudentsButton.Size = new Size(40, 40);
+            GetAllStudentsButton.Size = new Size(ButtonWidth, ButtonHeight);
             GetAllStudentsButton.Location = new Point(30,30);
-            GetAllStudentsButton.Text = "Get All Students";
-            this.Controls.Add(GetAllStudentsButton);
-            GetAllStudentsButton.Click += new EventHandler(GetAllStudentsButton_Click);
+            GetAllStudentsButton.Text = "Get All";
+            Controls.Add(GetAllStudentsButton);
+            GetAllStudentsButton.Click += GetAllStudentsButton_Click;
 
             CreateStudentButton = new Button();
-            CreateStudentButton.Size = new Size(40, 40);
-            CreateStudentButton.Location = new Point(70, 30);
-            CreateStudentButton.Text = "Create Student";
-            this.Controls.Add(CreateStudentButton);
-            CreateStudentButton.Click += new EventHandler(CreateStudentButton_Click);
+            CreateStudentButton.Size = new Size(ButtonWidth, ButtonHeight);
+            CreateStudentButton.Location = new Point(80, 30);
+            CreateStudentButton.Text = "Create";
+            Controls.Add(CreateStudentButton);
+            CreateStudentButton.Click += CreateStudentButton_Click;
 
             DeleteStudentButton = new Button();
-            DeleteStudentButton.Size = new Size(40, 40);
-            DeleteStudentButton.Location = new Point(170, 30);
-            DeleteStudentButton.Text = "Delete Student";
-            this.Controls.Add(DeleteStudentButton);
-            DeleteStudentButton.Click += new EventHandler(DeleteStudentButton_Click);
+            DeleteStudentButton.Size = new Size(ButtonWidth, ButtonHeight);
+            DeleteStudentButton.Location = new Point(30, 50);
+            DeleteStudentButton.Text = "Delete";
+            Controls.Add(DeleteStudentButton);
+            DeleteStudentButton.Click += DeleteStudentButton_Click;
 
-            //Binder = new StudentBinder(Client);
+            EditStudentButton = new Button();
+            EditStudentButton.Size = new Size(ButtonWidth, ButtonHeight);
+            EditStudentButton.Location = new Point(80, 50);
+            EditStudentButton.Text = "Edit";
+            Controls.Add(EditStudentButton);
+            EditStudentButton.Click += EditStudentButton_Click;
+
+            FirstNameText = new TextBox();
+            FirstNameText.Multiline = false;
+            FirstNameText.AcceptsReturn = false;
+            FirstNameText.AcceptsTab = false;
+            FirstNameText.MaxLength = 99;
+            FirstNameText.Location = new Point(220, 30);
+            FirstNameText.Size = new Size(TextBoxWidth, TextBoxHeight);
+            Controls.Add(FirstNameText);
+
+            LastNameText = new TextBox();
+            LastNameText.Multiline = false;
+            LastNameText.AcceptsReturn = false;
+            LastNameText.AcceptsTab = false;
+            LastNameText.MaxLength = 99;
+            LastNameText.Location = new Point(220, 50);
+            LastNameText.Size = new Size(TextBoxWidth, TextBoxHeight);
+            Controls.Add(LastNameText);
+
+            GpaText = new TextBox();
+            GpaText.Multiline = false;
+            GpaText.AcceptsReturn = false;
+            GpaText.AcceptsTab = false;
+            GpaText.MaxLength = 99;
+            GpaText.Location = new Point(420,30);
+            GpaText.Size = new Size(100, TextBoxHeight);
+            Controls.Add(GpaText);
+
+            FirstLabel = new Label();
+            FirstLabel.Size = new Size(100, 20);
+            FirstLabel.Text = "First Name:";
+            FirstLabel.Location = new Point(150, 30);
+            Controls.Add(FirstLabel);
+
+            LastLabel = new Label();
+            LastLabel.Size = new Size(100, 20);
+            LastLabel.Text = "Last Name:";
+            LastLabel.Location = new Point(150, 50);
+            Controls.Add(LastLabel);
+
+            GpaLabel = new Label();
+            GpaLabel.Size = new Size(50, 20);
+            GpaLabel.Text = "GPA:";
+            GpaLabel.Location = new Point(380, 30);
+            Controls.Add(GpaLabel);
+
             MainGrid = new DataGridView();
+            MainGrid.ReadOnly = true;
             MainGrid.MultiSelect = false;
             MainGrid.DataSource = GetStudents();
-            this.Controls.Add(MainGrid);
+            Controls.Add(MainGrid);
             MainGrid.Location = new Point(30, 80);
+            MainGrid.Size = new Size(570, 400);
         }
 
         private async void GetAllStudentsButton_Click(object sender, EventArgs e)
@@ -87,6 +153,31 @@ namespace StudentManagementClient
             {
                 MessageBox.Show("No student selected");
                 return; 
+            }
+            var student = selected[0].OwningRow
+                .DataBoundItem as Student;
+            if (student == null)
+            {
+                return;
+            }
+
+            DialogResult result = MessageBox.Show($"Do You Want to delete {student.LastName}, {student.FirstName}?", "Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+            if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+
+            await DeleteStudent(student);
+            return;
+        }
+
+        private async void EditStudentButton_Click(object sender, EventArgs e)
+        {
+            var selected = MainGrid.SelectedCells;
+            if (selected.Count <= 0)
+            {
+                MessageBox.Show("No student selected");
+                return;
             }
             var student = selected[0].OwningRow
                 .DataBoundItem as Student;

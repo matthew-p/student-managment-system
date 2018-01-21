@@ -1,0 +1,29 @@
+---
+- name: make /data directory for MsSql
+  file:
+    path: /var/opt/mssql/data
+    state: directory
+
+# - name: pull the microsoft MsSql docker image
+#   docker_container:
+#     name: mssql-server-linux
+#     image: microsoft/mssql-server-linux:2017-latest
+#     pull: yes
+#     volumes:
+#       - /data
+#     keep_volumes: true
+#     exposed_ports: 
+#       - 5000
+
+# - name: check if container is already running
+#   shell: docker inspect -f {{ '{{' }}.State.Running{{ '}}' }} sql1 
+#   register: sql_docker_status
+
+
+- name: run the mssql container
+  shell: >
+    docker run -e "ACCEPT_EULA=Y" 
+    -e "MSSQL_SA_PASSWORD={{ mssql_pass }}" 
+    -p 1401:1433 --name sql1 
+    -d microsoft/mssql-server-linux:2017-latest
+  #when: sql_docker_status == false

@@ -1,0 +1,52 @@
+---
+- name: install prerequisite packages
+  apt:
+    name: 
+    state: latest
+    update_cache: yes
+    cache_valid_time: 86400
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+
+- name: Add Docker repository key
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+
+- name: add docker repository
+  apt_repository: 
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+    update_cache: yes
+    state: present
+
+- name: Install (or update) docker 
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 86400
+  with_items:
+    - python-dev
+    - python-pip
+    - docker-ce
+
+- name: install docker pip packages
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - docker
+    - docker-py
+    - docker-compose
+
+- name: get username
+  become: no
+  set_fact:
+    user_name: "{{ ansible_user_id }}"
+
+- name: add user to docker group
+  shell: usermod -aG docker {{ user_name }}
+
+

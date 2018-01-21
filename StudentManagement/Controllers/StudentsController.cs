@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using StudentManagement.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Data.SqlClient;
 using StudentManagement.Repositories;
 
 namespace StudentManagement.Controllers
@@ -68,7 +63,7 @@ namespace StudentManagement.Controllers
                 Gpa = gpa
             };
             
-            (var rows, var err) = await Repo.CreateStudent(firstName, lastName, gpa)
+            (var r, var err) = await Repo.CreateStudent(firstName, lastName, gpa)
                 .ConfigureAwait(false);
 
             if (err != null)
@@ -76,8 +71,7 @@ namespace StudentManagement.Controllers
                 return StatusCode(500);
             }
 
-            var idObj = new { id = student.Id };
-            return CreatedAtRoute("GetById", idObj, student);
+            return StatusCode(201);
         }
 
         // PUT api/v1/5
@@ -108,7 +102,6 @@ namespace StudentManagement.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute]long id)
         {
-            var idParam = new SqlParameter("Id", id);
             (var r, var err) = await Repo.Delete(id).ConfigureAwait(false);
 
             if (err != null)

@@ -38,9 +38,9 @@ namespace StudentManagement.Repositories
     
     public class StudentRepository : IStudentRepository
     {
-        private readonly StudentManagmentContext _context;
+        private readonly StudentManagementContext _context;
 
-        public StudentRepository(StudentManagmentContext context)
+        public StudentRepository(StudentManagementContext context)
         {
             _context = context;
         }
@@ -60,6 +60,7 @@ namespace StudentManagement.Repositories
                 return (null, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
+
         public async Task<(Student, ServiceError)> GetById(long id)
         {
             try
@@ -80,25 +81,33 @@ namespace StudentManagement.Repositories
                 return (null, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
+
         public async Task<(long, ServiceError)> CreateStudent(string firstName = null, string lastName = null, decimal gpa = -1M)
         {
             try
             {
+                gpa = Math.Round(gpa, 3);
+                if (gpa < 0 || gpa > 5M)
+                {
+                    return (0, new ServiceError("GPA Out of Range"));
+                }
+
                 var firstNameParam = new SqlParameter("FirstName", firstName ?? (object)DBNull.Value);
                 var lastNameParam = new SqlParameter("LastName", lastName ?? (object)DBNull.Value);
                 var gpaParam = new SqlParameter("Gpa", gpa);
 
-                var id = await _context.Database
+                var result = await _context.Database
                     .ExecuteSqlCommandAsync($"EXECUTE dbo.InsertStudent @FirstName,@LastName,@Gpa", 
                         firstNameParam, lastNameParam, gpaParam)
                     .ConfigureAwait(false);
-                return (id, null);
+                return (result, null);
             }
             catch (Exception ex)
             {
                 return ((long)0, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
+
         public async Task<(int, ServiceError)> UpdateStudent(long id, 
             string firstName = null, string lastName = null, decimal? gpa = null)
         {
@@ -127,18 +136,19 @@ namespace StudentManagement.Repositories
                     ? new SqlParameter("Gpa", gpa)
                     : new SqlParameter("Gpa", DBNull.Value);
 
-                var r = await _context.Database
+                var result = await _context.Database
                     .ExecuteSqlCommandAsync("EXECUTE dbo.UpdateStudent @Id,@FirstName,@LastName,@Gpa", 
                         idParam, firstNameParam, lastNameParam, gpaParam)
                     .ConfigureAwait(false);
 
-                return (r, null);
+                return (result, null);
             }
             catch (Exception ex)
             {
                 return (0, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
+
         public async Task<(int, ServiceError)>  Delete(long id)
         {
             try

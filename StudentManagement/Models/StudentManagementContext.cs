@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace StudentManagement.Models
 {
@@ -8,9 +7,9 @@ namespace StudentManagement.Models
         DbSet<Student> Students { get; set; }
     }
 
-    public class StudentManagmentContext : DbContext, IStudentManagementContext
+    public class StudentManagementContext : DbContext, IStudentManagementContext
     {
-        public StudentManagmentContext(DbContextOptions<StudentManagmentContext> options) 
+        public StudentManagementContext(DbContextOptions<StudentManagementContext> options) 
             : base(options)
             {
             }

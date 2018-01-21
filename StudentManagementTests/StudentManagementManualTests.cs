@@ -14,7 +14,7 @@ namespace StudentManagementTests
     {
         private IConfigurationRoot Configuration { get; set; }
 
-        private StudentManagmentContext Cntx { get; set; }
+        private StudentManagementContext Cntx { get; set; }
 
         private StudentRepository Repo { get; set; }
 
@@ -28,10 +28,10 @@ namespace StudentManagementTests
 
             var conn = Configuration.GetConnectionString("SchoolDatabase");
 
-            var builder = new DbContextOptionsBuilder<StudentManagmentContext>();
+            var builder = new DbContextOptionsBuilder<StudentManagementContext>();
             builder.UseSqlServer(conn);
             var opts = builder.Options;
-            Cntx = new StudentManagmentContext(opts);
+            Cntx = new StudentManagementContext(opts);
 
             Repo = new StudentRepository(Cntx);
         }

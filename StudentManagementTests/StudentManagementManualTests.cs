@@ -9,6 +9,7 @@ using System.Threading;
 
 namespace StudentManagementTests
 {
+    [Trait("Category", "Manual")]
     public class StudentManagementManualTests : IDisposable
     {
         private IConfigurationRoot Configuration { get; set; }
@@ -19,6 +20,7 @@ namespace StudentManagementTests
 
         public StudentManagementManualTests()
         {
+            // get test json config
             var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile("./appsettings.json",
                     optional: false, reloadOnChange: true);
@@ -34,6 +36,7 @@ namespace StudentManagementTests
             Repo = new StudentRepository(Cntx);
         }
 
+        // Helper methods 
         private void RemoveTestStudents()
         {
             Cntx.Database
@@ -73,7 +76,7 @@ namespace StudentManagementTests
         }
 
         [Fact]
-        public void CreateStudent_Works()
+        public void CreateStudent_Works_GivenValidData()
         {
             (var id, var err) = Repo.CreateStudent("CreateTest", "TestClass", 3.1M)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
@@ -104,8 +107,11 @@ namespace StudentManagementTests
             Assert.NotEmpty(students.Where(s => s.Gpa == 3.2M));
         }
 
+        /// <summary>
+        /// Needs the appropriate record to exist in the table
+        /// </summary>
         [Fact]
-        public void UpdateStudent_Works()
+        public void UpdateStudent_Works_AgainstValidRecord()
         {          
             (var something, var err2) = Repo.UpdateStudent(162, "UpdatedName", "UpdatedName")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
@@ -115,7 +121,7 @@ namespace StudentManagementTests
         }
 
         [Fact]
-        public void DeleteStudent_Works()
+        public void DeleteStudent_Works_AgainstValidRecord()
         {
             AddTestStudent();
             (var students, var err1) = Repo.GetAll().ConfigureAwait(false).GetAwaiter().GetResult();

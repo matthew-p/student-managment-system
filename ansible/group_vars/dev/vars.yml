@@ -1,2 +1,0 @@
----
-mssql_pass: "{{ vault_mssql_pass }}" 

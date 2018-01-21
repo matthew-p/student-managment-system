@@ -1,28 +1,23 @@
 # student-managment-system
 
-ensure python and openssh-server are installed on the target vm,
-On the host machine ensure `sudo apt install python-pip` and `pip install docker` have been done to install the Docker SDK for executing the ansible docker module.
+This needs to have MSSql express running on the same machine as the WebApi StudentManagement App (the app looks to local host for the Sql server), which needs Dotnet Core 2.0.
 
-Invoke ansible playbook installs docker:
+https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore2x
+
+https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup
+
+Run the initial .sql files in StudentManagement / SqlScripts to create-school.sql then create-students.sql to create the database and table respectively. 
+
+Next, execute all of the stored procedure .sql scripts in the SqlScripts / Procedures subdirectory, as the repository expects them. 
 ```bash
-ansible-playbook main.yml -i inventory.yml --become --ask-become-pass --ask-vault-pass --ask-pass --user username
+sqlcmd -S localhost -U SA -P 'yourPassword' -i SqlScripts/Procedures/DeleteStudent.sql.
 ```
 
-ensure user is in docker group
-```bash
-usermod -aG docker username
-```
+The connection strings are set in the appsettings.json files for the WebApi StudentManagment project, and the Test project. They can be different, and are intended to be filled with whatever secret is necessay by the full build process. 
 
-ssh into the vm to start a mssql docker container:
-```bash
-docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Abcd!12345' -p 1400:1433 --name sql1 -d microsoft/mssql-server-linux:2017-latest
-```
+The web api is built with Dotnet Core 2.0 on Ubuntu, listens on port 5000. 
 
-set the container to restart
-```bash
-docker update --restart=unless-stopped containerIdNum
-docker update --restart=unless-stopped $(docker ps -aqf "name=sql1")
-```
+The Client is a Winforms desktop app built in Visual Studio 2017. 
 
 install mssql tools
 ```bash
@@ -35,26 +30,4 @@ sudo apt-get install mssql-tools unixodbc-dev
 
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
-```
-stop the docker container
-```bash
-docker stop sql1
-```
-
-remove the docker container
-```bash 
-docker rm sql1
-```
-get the container ID by name
-``` bash
-sudo docker ps -aqf "name=sql1"
-```
-instance ip address 
-```bash
-docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -aqf "name=sql1")
-```
-
-port bindings
-```bash
-docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(index $conf 0).HostPort}} {{end}}' $(docker ps -aqf "name=sql1")
 ```

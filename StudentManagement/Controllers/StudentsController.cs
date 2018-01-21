@@ -15,7 +15,7 @@ namespace StudentManagement.Controllers
     {
         private readonly IStudentRepository Repo;
 
-        public StudentsController(IStudentRepository repo) //StudentManagmentContext context)
+        public StudentsController(IStudentRepository repo) 
         {
             Repo = repo;
         }

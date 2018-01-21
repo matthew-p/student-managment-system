@@ -10,10 +10,29 @@ namespace StudentManagement.Repositories
 {
     public interface IStudentRepository
     {
+        /// <summary>
+        /// Fetches all non-deleted student records
+        /// </summary>
         Task<(IEnumerable<Student>, ServiceError)> GetAll();
+
+        /// <summary>
+        /// Gets a single non-deleted student record by ID
+        /// </summary>
         Task<(Student, ServiceError)> GetById(long id);
+
+        /// <summary>
+        /// Creates a new student record
+        /// </summary>
         Task<(long, ServiceError)> CreateStudent(string firstName, string lastName, decimal gpa = -1M);
+
+        /// <summary>
+        /// Edits an existing student record
+        /// </summary>
         Task<(int, ServiceError)> UpdateStudent(long id, string firstName = null, string lastName = null, decimal? gpa = null);
+
+        /// <summary>
+        /// Enables the deleted flag on a student record
+        /// </summary>
         Task<(int, ServiceError)> Delete(long id);
     }
     

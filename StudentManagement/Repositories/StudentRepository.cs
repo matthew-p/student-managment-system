@@ -32,7 +32,8 @@ namespace StudentManagement.Repositories
             {
                 var all = await _context.Students
                     .FromSql("EXECUTE dbo.SelectAllStudents")
-                    .ToListAsync();
+                    .ToListAsync()
+                    .ConfigureAwait(false);
                 return (all, null);
             }
             catch (Exception ex)
@@ -44,26 +45,33 @@ namespace StudentManagement.Repositories
         {
             try
             {
-                var item = await _context.Students.FirstOrDefaultAsync(
-                    s => s.Id == id);
+                var item = await _context.Students
+                    .FromSql($"EXECUTE dbo.SelectStudentById {id}")
+                    .ToListAsync()
+                    .ConfigureAwait(false);
 
-                if(item == null) 
+                if(item?.FirstOrDefault() == null) 
                 {
                     return (null, null);
                 }
-                return (item, null);
+                return (item[0], null);
             }
             catch (Exception ex)
             {
                 return (null, new ServiceError {Exception = ex, Message = ex.Message});
             }
         }
-        public async Task<(long, ServiceError)> CreateStudent(string firstName, string lastName, decimal gpa = -1M)
+        public async Task<(long, ServiceError)> CreateStudent(string firstName = null, string lastName = null, decimal gpa = -1M)
         {
             try
             {
+                var firstNameParam = new SqlParameter("FirstName", firstName ?? (object)DBNull.Value);
+                var lastNameParam = new SqlParameter("LastName", lastName ?? (object)DBNull.Value);
+                var gpaParam = new SqlParameter("Gpa", gpa);
+
                 var id = await _context.Database
-                    .ExecuteSqlCommandAsync($"EXECUTE dbo.InsertStudent {firstName},{lastName},{gpa}")
+                    .ExecuteSqlCommandAsync($"EXECUTE dbo.InsertStudent @FirstName,@LastName,@Gpa", 
+                        firstNameParam, lastNameParam, gpaParam)
                     .ConfigureAwait(false);
                 return (id, null);
             }
@@ -85,10 +93,20 @@ namespace StudentManagement.Repositories
                         return (0, new ServiceError("GPA Out of Range"));
                     }
                 }
+                if (firstName == null)
+                {
+                    var x = DBNull.Value;
+                }
                 var idParam = new SqlParameter("Id", id);
-                var firstNameParam = new SqlParameter("FirstName", firstName);
-                var lastNameParam = new SqlParameter("LastName", lastName);
-                var gpaParam = new SqlParameter("Gpa", gpa);
+                var firstNameParam = firstName != null 
+                    ? new SqlParameter("FirstName", firstName) 
+                    : new SqlParameter("FirstName", DBNull.Value);
+                var lastNameParam = lastName != null 
+                    ? new SqlParameter("LastName", lastName)
+                    : new SqlParameter("LastName", DBNull.Value);
+                var gpaParam = gpa != null 
+                    ? new SqlParameter("Gpa", gpa)
+                    : new SqlParameter("Gpa", DBNull.Value);
 
                 var r = await _context.Database
                     .ExecuteSqlCommandAsync("EXECUTE dbo.UpdateStudent @Id,@FirstName,@LastName,@Gpa", 

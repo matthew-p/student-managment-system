@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StudentManagement.Models;
 using StudentManagement.Repositories;
+using System.Threading;
 
 namespace StudentManagementTests
 {
@@ -51,6 +52,14 @@ namespace StudentManagementTests
                 .GetResult();
         }
 
+        private Student GetTestStudent(long id)
+        {
+            return Cntx.Students
+                .FromSql($"SELECT * FROM Students WHERE Id = {id}")
+                .ToList()
+                .First();
+        }
+
         [Fact]
         public void GetAllStudents_Works_GivenStudentsInDb()
         {
@@ -80,27 +89,29 @@ namespace StudentManagementTests
         }
 
         [Fact]
-        public void UpdateStudent_Works()
+        public void CreateStudent_Works_WithNull()
         {
-            AddTestStudent();
-            (var students, var err1) = Repo.GetAll()
+            (var id, var err) = Repo.CreateStudent(null, "TestClass", 3.2M)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
-            Assert.Null(err1);
+            Assert.Null(err);
+
+            (var students, var allErr) = Repo.GetAll()
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+
+            Assert.Null(allErr);
             Assert.NotEmpty(students);
+            Assert.NotEmpty(students.Where(s => s.Gpa == 3.2M));
+        }
 
-            var updatable = students.First(s => s.FirstName != "UpdatedName" && s.LastName == "TestClass");
-            Assert.NotNull(updatable);
-
-            Repo.UpdateStudent(updatable.Id, "UpdatedName")
+        [Fact]
+        public void UpdateStudent_Works()
+        {          
+            (var something, var err2) = Repo.UpdateStudent(162, "UpdatedName", "UpdatedName")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
-            (var updated , var err2) = Repo.GetById(updatable.Id)
-                .ConfigureAwait(false).GetAwaiter().GetResult();
-
-            Assert.Null(err2);
-            Assert.NotNull(updated);
-            Assert.Equal(updated.FirstName, "UpdatedName");
+            var result = GetTestStudent(162);
+            Assert.Equal("UpdatedName", result.LastName);
         }
 
         [Fact]

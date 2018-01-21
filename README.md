@@ -1,5 +1,7 @@
 # student-managment-system
 
+A test CRUD project with a WebAPI backend and Winforms client. 
+
 This needs to have MSSql express running on the same machine as the WebApi StudentManagement App (the app looks to local host for the Sql server), which needs Dotnet Core 2.0.
 
 https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore2x

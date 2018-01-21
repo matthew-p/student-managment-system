@@ -48,7 +48,8 @@ namespace StudentManagementClient
 
         public Form1()
         {
-            Size = new Size(700,550);
+            Text = "Student Management";
+            Size = new Size(600,550);
 
             GetAllStudentsButton = new Button();
             GetAllStudentsButton.Size = new Size(ButtonWidth, ButtonHeight);
@@ -129,8 +130,15 @@ namespace StudentManagementClient
             MainGrid.DataSource = GetStudents();
             Controls.Add(MainGrid);
             MainGrid.Location = new Point(30, 80);
-            MainGrid.Size = new Size(570, 400);
+            MainGrid.Size = new Size(500, 400);
             MainGrid.SelectionChanged += MainGrid_SelectionChanged;
+
+            Shown += Form1_Shown;
+        }
+
+        private async void Form1_Shown(object sender, EventArgs e)
+        {
+            await GetAll().ConfigureAwait(false);
         }
 
         private async void MainGrid_SelectionChanged(object sender, EventArgs e)
@@ -152,9 +160,6 @@ namespace StudentManagementClient
 
         private async void GetAllStudentsButton_Click(object sender, EventArgs e)
         {
-            //var students = await GetStudents().ConfigureAwait(false);
-            //MainGrid.Invoke((Action)(() => MainGrid.DataSource = students));
-            //MainGrid.DataSource = students;
             await GetAll().ConfigureAwait(false);
         }
 
@@ -178,7 +183,7 @@ namespace StudentManagementClient
             }
             await CreateStudent(
                 new Student {FirstName = first, LastName = last, Gpa = gpa});
-            MessageBox.Show("Created Student");
+
             await GetAll();
         }
 
@@ -197,7 +202,8 @@ namespace StudentManagementClient
                 return;
             }
 
-            DialogResult result = MessageBox.Show($"Do You Want to delete {student.LastName}, {student.FirstName}?", "Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+            DialogResult result = MessageBox.Show($"Do You Want to delete {student.LastName}, {student.FirstName}?", 
+                "Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (result == DialogResult.Cancel)
             {
                 return;
@@ -233,7 +239,8 @@ namespace StudentManagementClient
                 return;
             }
 
-            DialogResult result = MessageBox.Show($"Do You Want to edit: {student.LastName}, {student.FirstName}?", "Edit", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+            DialogResult result = MessageBox.Show($"Do You Want to edit: {student.LastName}, {student.FirstName}?", 
+                "Edit", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (result == DialogResult.Cancel)
             {
                 return;
@@ -297,7 +304,7 @@ namespace StudentManagementClient
                     {
                         string resultString = await content.ReadAsStringAsync();
                         HttpStatusCode statusCode = response.StatusCode;
-                        if (statusCode != HttpStatusCode.OK)
+                        if (statusCode != HttpStatusCode.Created)
                         {
                             MessageBox.Show($"Failed to create the student. Status Code: \n {statusCode}");
                             return result;

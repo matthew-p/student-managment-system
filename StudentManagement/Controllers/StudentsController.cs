@@ -52,10 +52,12 @@ namespace StudentManagement.Controllers
             decimal gpa = -1M)
         {
             if (string.IsNullOrWhiteSpace(firstName) 
-                || string.IsNullOrWhiteSpace(lastName))
+                || string.IsNullOrWhiteSpace(lastName)
+                || gpa < 0 || gpa > 5M)
             {
                 return BadRequest();
             }
+
             var student = new Student 
             {
                 FirstName = firstName, 

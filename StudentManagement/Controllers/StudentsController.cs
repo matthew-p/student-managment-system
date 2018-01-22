@@ -2,26 +2,30 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentManagement.Models;
 using StudentManagement.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace StudentManagement.Controllers
 {
     [Route("api/v1/[controller]")]
     public class StudentsController : Controller
     {
-        private readonly IStudentRepository Repo;
+        private readonly ILogger _logger;
+        private readonly IStudentRepository _repo;
 
-        public StudentsController(IStudentRepository repo) 
+        public StudentsController(ILogger<StudentsController> logger, IStudentRepository repo) 
         {
-            Repo = repo;
+            _logger = logger;
+            _repo = repo;
         }
 
         // GET api/v1/students
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            (var students, var err) = await Repo.GetAll().ConfigureAwait(false);
+            (var students, var err) = await _repo.GetAll().ConfigureAwait(false);
             if (err != null)
             {
+                _logger.LogError($"Failed to get all students: {err.Message}");
                 return StatusCode(500);
             }
             return Ok(students);
@@ -31,14 +35,16 @@ namespace StudentManagement.Controllers
         [HttpGet("{id}", Name = "GetById")]
         public async Task<IActionResult> GetById(long id)
         {
-            (var student, var err) = await Repo.GetById(id).ConfigureAwait(false);
+            (var student, var err) = await _repo.GetById(id).ConfigureAwait(false);
 
             if (err != null)
             {
+                _logger.LogError($"Failed to get student {id}: {err.Message}");
                 return StatusCode(500);
             }
             if(student == null) 
             {
+                _logger.LogDebug($"Requested student ID: {id}, was not found");
                 return NotFound();
             }
             return Ok(student);
@@ -49,12 +55,13 @@ namespace StudentManagement.Controllers
         public async Task<IActionResult> CreateStudent(
             string firstName, 
             string lastName, 
-            decimal gpa = -1M)
+            decimal gpa = 0M)
         {
             if (string.IsNullOrWhiteSpace(firstName) 
                 || string.IsNullOrWhiteSpace(lastName)
                 || gpa < 0 || gpa > 5M)
             {
+                _logger.LogDebug("Improper values provided to create student");
                 return BadRequest();
             }
 
@@ -65,14 +72,15 @@ namespace StudentManagement.Controllers
                 Gpa = gpa
             };
             
-            (var r, var err) = await Repo.CreateStudent(firstName, lastName, gpa)
+            (var result, var err) = await _repo.CreateStudent(firstName, lastName, gpa)
                 .ConfigureAwait(false);
 
             if (err != null)
             {
+                _logger.LogError($"Failed to create student: {err.Message}");
                 return StatusCode(500);
             }
-
+            _logger.LogDebug($"Created student: {result}");
             return StatusCode(201);
         }
 
@@ -87,14 +95,16 @@ namespace StudentManagement.Controllers
             if ((string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
                 || (gpa == null || gpa < 0 || gpa > 5M)) 
             {
+                _logger.LogDebug("Improper values given to update student");
                 return BadRequest();
             }
 
-            (var r, var err) = await Repo.UpdateStudent(id, firstName, lastName, gpa)
+            (var r, var err) = await _repo.UpdateStudent(id, firstName, lastName, gpa)
                 .ConfigureAwait(false);
             
             if (err != null)
             {
+                _logger.LogError($"Failed to update student ID: {id}: {err.Message}");
                 return StatusCode(500);
             }
             return new NoContentResult();
@@ -104,13 +114,14 @@ namespace StudentManagement.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute]long id)
         {
-            (var r, var err) = await Repo.Delete(id).ConfigureAwait(false);
+            (var r, var err) = await _repo.Delete(id).ConfigureAwait(false);
 
             if (err != null)
             {
+                _logger.LogError($"Failed to delete student ID {id}: {err.Message}");
                 return StatusCode(500);
             }
-
+            _logger.LogDebug($"Deleted student ID {id}: {r}");
             return new NoContentResult();
         }
     }

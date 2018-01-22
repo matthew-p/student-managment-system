@@ -23,7 +23,7 @@ namespace StudentManagement.Repositories
         /// <summary>
         /// Creates a new student record
         /// </summary>
-        Task<(long, ServiceError)> CreateStudent(string firstName, string lastName, decimal gpa = -1M);
+        Task<(long, ServiceError)> CreateStudent(string firstName, string lastName, decimal gpa = 0M);
 
         /// <summary>
         /// Edits an existing student record
@@ -82,7 +82,7 @@ namespace StudentManagement.Repositories
             }
         }
 
-        public async Task<(long, ServiceError)> CreateStudent(string firstName = null, string lastName = null, decimal gpa = -1M)
+        public async Task<(long, ServiceError)> CreateStudent(string firstName = null, string lastName = null, decimal gpa = 0M)
         {
             try
             {
@@ -154,11 +154,11 @@ namespace StudentManagement.Repositories
             try
             {
                 var idParam = new SqlParameter("Id", id);
-                var r = await _context.Database
+                var result = await _context.Database
                     .ExecuteSqlCommandAsync("EXECUTE dbo.DeleteStudentRecord @Id", idParam)
                     .ConfigureAwait(false);
 
-                return (r, null);
+                return (result, null);
             }
             catch (Exception ex)
             {

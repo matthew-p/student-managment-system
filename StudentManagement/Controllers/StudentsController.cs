@@ -107,6 +107,7 @@ namespace StudentManagement.Controllers
                 _logger.LogError($"Failed to update student ID: {id}: {err.Message}");
                 return StatusCode(500);
             }
+            _logger.LogDebug($"Updated Student ID: {id}: {r}");
             return new NoContentResult();
         }
 
